@@ -1,0 +1,29 @@
+body {
+  width: 70%;
+  margin: auto;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Arial;
+  padding-top: 1.5em;
+}
+
+h1 {
+  font-size: 32px;
+}
+
+td,
+th,
+table {
+  border: 1px solid;
+}
+
+figcaption {
+  font-style: italic;
+}
+
+figure {
+  float: right;
+}

@@ -1,0 +1,145 @@
+body {
+  font-family: "Roboto", sans-serif;
+  text-decoration: none;
+  font-weight: 500;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+.Content {
+  box-sizing: border-box;
+  width: 1219px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 55px;
+  padding-right: 55px;
+}
+
+.Content h1 {
+  font-size: 64px;
+  line-height: 75px;
+  text-align: center;
+  color: #007765;
+}
+
+.Content p {
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 38px;
+  color: black;
+}
+
+.Header {
+  position: fixed;
+  min-width: 485px;
+  top: 0px;
+  left: 0px;
+  height: 84px;
+  width: 100%;
+  background-color: #007765;
+}
+.Header img {
+  width: 184px;
+  height: 45px;
+  margin: 20px 0 0 0;
+}
+
+.Links {
+  margin: 28px 0 0 0;
+  float: right;
+}
+
+.Cont1 {
+  box-sizing: border-box;
+  margin: 84px 0 0 0;
+  height: 403px;
+  width: 100%;
+  padding: 160px 0;
+  background-image: url(img/background.png);
+  background-size: cover;
+  background-position: center center;
+  text-align: center;
+}
+
+.Cont1 span {
+  font-size: 72px;
+  line-height: 84px;
+  color: white;
+}
+.Cont3 {
+  box-sizing: border-box;
+  height: 483px;
+  width: 100%;
+  padding: 128px 0 0 0;
+  background-image: url(img/background-1.png);
+  background-size: cover;
+  background-position: center center;
+  text-align: center;
+}
+
+.Cont3 span {
+  text-align: center;
+  font-style: italic;
+  font-size: 48px;
+  line-height: 56px;
+  color: white;
+}
+.Links a,
+span {
+  text-decoration: none;
+  font-size: 24px;
+  color: white;
+}
+
+.CardBox {
+  text-align: center;
+}
+
+.Card {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 350px;
+  height: 283px;
+}
+
+.Card img {
+  display: block;
+  height: 168px;
+  width: 168px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 12px;
+}
+
+.Card h2 {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 28px;
+  color: #007765;
+}
+
+.Card h3 {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 21px;
+  font-style: italic;
+}
+
+.Footer {
+  box-sizing: border-box;
+  height: 176px;
+  padding-top: 48px;
+  text-align: center;
+  background-color: #333333;
+}
+
+.Footer p {
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 21px;
+  color: #ffffff;
+}
