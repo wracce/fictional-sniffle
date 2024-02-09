@@ -1,0 +1,4 @@
+C:/Users/Boss/CLionProjects/Diff2/cmake-build-release/CMakeFiles/edit_cache.dir
+C:/Users/Boss/CLionProjects/Diff2/cmake-build-release/CMakeFiles/Diff2.dir
+C:/Users/Boss/CLionProjects/Diff2/cmake-build-release/CMakeFiles/rebuild_cache.dir
+C:/Users/Boss/CLionProjects/Diff2/cmake-build-release/CMakeFiles/Diff2_autogen.dir
