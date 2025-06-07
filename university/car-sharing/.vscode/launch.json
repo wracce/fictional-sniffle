@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Docker Compose: Build and Run Development",
+        "type": "node",
+        "request": "launch",
+        "command": "docker-compose",
+        "args": [
+          "up",
+          "--build"
+        ],
+        "envFile": "${workspaceFolder}/.env",
+        "cwd": "${workspaceFolder}",
+        "console": "integratedTerminal",
+        "problemMatcher": []
+      }
+    ]
+  }
+  

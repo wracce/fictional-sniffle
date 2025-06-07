@@ -1,0 +1,15 @@
+{
+    "datacenter": "dc1",
+    "node_name": "consul-node",
+    "server": true,
+    "ui": true,
+    "ports": {
+      "dns": 8600,
+      "http": 8500,
+      "serf_lan": 8301,
+      "serf_wan": 8302
+    },
+    "config": {
+      "enable_script_checks": true
+    }
+  }

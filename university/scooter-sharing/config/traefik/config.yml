@@ -1,0 +1,79 @@
+# traefik.yml
+
+# Global configuration
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+# Entry points
+entryPoints:
+  web:
+    address: ":80"
+  web-secure:
+    address: ":443"
+
+# Providers configuration
+providers:
+  docker:
+    exposedByDefault: false
+  consulCatalog:
+    endpoint:
+      address: "http://sd:8500"
+
+# API and dashboard configuration
+api:
+  insecure: true
+  dashboard: true
+  debug: true
+
+# Middleware configuration
+http:
+  middlewares:
+    jwt-auth:
+      forwardAuth:
+        address: "http://auth-service:3000/api/auth/check"
+        authResponseHeaders:
+          - "X-User-ID"
+          - "X-User-Role"
+
+# Routers configuration (Catch-all router for all services)
+  routers:
+    http-catchall:
+      rule: "HostRegexp(`{host:.+}`)"
+      middlewares:
+        - "jwt-auth"
+      service: "api@docker"
+      entryPoints:
+        - "web"
+
+# Services configuration
+services:
+  api:
+    loadBalancer:
+      servers:
+        - url: "http://api-service:80"
+      passHostHeader: true
+
+# Traefik logs and access logs
+log:
+  level: "INFO"
+  filePath: "/var/log/traefik.log"
+
+accessLog:
+  filePath: "/var/log/traefik-access.log"
+
+# Tracing
+tracing:
+  enabled: true
+  provider: "jaeger"
+  jaeger:
+    samplingServerURL: "http://jaeger:5778/sampling"
+    localAgentHostPort: "jaeger:6831"
+
+# Certificates and TLS (if needed)
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: "/certs/cert.pem"
+        keyFile: "/certs/key.pem"

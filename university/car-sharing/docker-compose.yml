@@ -1,0 +1,62 @@
+services:
+  vue-service:
+    build:
+      context: ./vue-service
+    ports:
+      - "80:8000"
+    depends_on:
+      - nginx-service
+    volumes:
+      - ./vue-service:/app
+    
+
+  nginx-service:
+    image: nginx:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx-service/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - nestjs-service
+    
+
+  nestjs-service:
+    build:
+      context: ./nestjs-service
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_HOST=db
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+    volumes:
+      - ./nestjs-service:/app
+
+
+  consul:
+    image: hashicorp/consul:latest
+    container_name: consul
+    ports:
+      - '8500:8500'  # Порт веб-интерфейса Consul
+      - '8600:8600/udp'  # DNS-порт для Service Discovery
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0  # Бинд интерфейса внутри контейнера
+    command: agent -dev -client=0.0.0.0  # Dev режим, доступный извне
+
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+
+    ports:
+      - "${DATABASE_PORT}:${DATABASE_PORT}"
+    
+    

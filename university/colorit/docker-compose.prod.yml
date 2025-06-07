@@ -1,0 +1,4 @@
+services:
+  nextjs:
+    build:
+      dockerfile: Dockerfile.prod

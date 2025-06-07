@@ -1,0 +1,16 @@
+{
+    "name": "NestJS Service",
+    "dockerComposeFile": "../../docker-compose.yml",
+    "service": "nestjs-service",
+    "workspaceFolder": "/app",
+    "extensions": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "nestjs.nestjs-snippets",
+      "Codeium.codeium""
+    ],
+    "settings": {
+      "terminal.integrated.shell.linux": "/bin/sh"
+    },
+    "postCreateCommand": "npm install"
+  }

@@ -1,0 +1,9 @@
+numpy==1.26.4
+matplotlib==3.10.0
+scikit-image==0.25.2
+scikit-learn==1.6.1
+fastai==2.7.19
+torch
+torchvision
+flask
+flask-restx

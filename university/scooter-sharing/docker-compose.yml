@@ -1,0 +1,206 @@
+volumes:
+    pgadmin:
+    
+services:
+# SERVER DISCOVERY
+  scooters-sd:
+    container_name: scooters-sd
+    image: consul:1.15.4
+    ports:
+      - "8500:8500"
+    volumes:
+      - ./config/consul/config.json:/etc/consul/config.json
+
+# API GATEWAY
+  scooters-gateway:
+    container_name: scooters-gateway
+    image: traefik:latest
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--api.insecure=true"
+      - "--providers.consulcatalog=true"
+      - "--entrypoints.web.address=:80"
+      - "--providers.consulcatalog.endpoint.address=http://scooters-sd:8500"
+      - "--entrypoints.web.forwardedheaders.insecure=true"
+      - "--entrypoints.web.forwardedheaders.trustedips=0.0.0.0/0"
+      - "--tracing=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    depends_on:
+      - scooters-sd
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    # - ./config/traefik/config.yml:/etc/traefik/traefik.yml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.jwt-scooters-auth.forwardscooters-auth.address=http://scooters-auth-service:3000/api/scooters-auth/check"
+      - "traefik.http.middlewares.jwt-scooters-auth.forwardscooters-auth.scooters-authresponseheaders=,X-User-ID,X-User-Role"
+      - "traefik.http.routers.api.middlewares=jwt-scooters-auth"
+      - "traefik.http.middlewares.jwt-scooters-auth.headers.customrequestheaders.scooters-authorization=Bearer .*"
+
+# BROKER
+  scooters-broker:
+    container_name: scooters-broker
+    image: rabbitmq:management
+    ports:
+      - "5672:5672" 
+      - "15672:15672"  
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - ./data/rabbitmq:/var/lib/rabbitmq
+
+# AUTH
+  scooters-users-db:
+    container_name: scooters-users-db
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
+    volumes:
+      - ./data/users-db:/data/db
+    ports:
+      - "27017:27017"
+
+  scooters-users-db-admin:
+    container_name: scooters-users-db-admin
+    image: mongo-express:latest
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_SERVER: scooters-users-db
+    depends_on:
+      - scooters-users-db
+    ports:
+      - "8081:8081"
+
+
+  scooters-auth-service:
+    container_name: scooters-auth-service
+    build:
+      context: ./auth-service
+    environment:
+      MONGODB_URI: mongodb://admin:admin@scooters-users-db:27017
+      
+      SERVER_HOST: scooters-auth-service
+      SERVER_PORT: 3000
+      CONSUL_HOST: scooters-sd
+      CONSUL_PORT: 8500
+      JWT_TOKEN_SECRET: DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.
+      JWT_TOKEN_EXPIRATION: 1d
+    volumes:
+      - ./auth-service:/app
+    depends_on:
+      - scooters-users-db
+    ports:
+      - "3000:3000"
+
+# SCOOTERS
+  scooter-db:
+    container_name: scooter-db
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: scooter_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/scooter-db:/var/lib/postgresql/data
+
+  scooter-db-admin:
+    container_name: scooter-db-admin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+       - pgadmin:/var/lib/pgadmin
+    depends_on:
+      - scooter-db
+
+  scooters-scooter-service:
+    container_name: scooters-scooter-service
+    build:
+      context: ./scooter-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://scooter-db:5432/scooter_db
+      SERVER_HOST: scooters-scooter-service
+      SERVER_PORT: 3002
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_TOKEN_SECRET: DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.
+      CONSUL_HOST: scooters-sd
+      CONSUL_PORT: 8500
+    depends_on:
+      - scooter-db
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./scooter-service:/app
+      - ./data/maven:/root/.m2
+
+# USERS
+  scooters-users-service:
+    container_name: scooters-users-service
+    build:
+      context: ./users-service
+    environment:
+      MONGODB_URI: mongodb://admin:admin@scooters-users-db:27017
+      GATEWAY_API: http://scooters-gateway:80
+      SERVER_HOST: scooters-users-service
+      SERVER_PORT: 3001
+      CONSUL_HOST: scooters-sd
+      CONSUL_PORT: 8500
+      BROKER_URL: amqp://user:password@scooters-broker:5672
+      BROKER_EXCHANGE: reqeusts
+      BROKER_QUEUE: reqeusts
+      JWT_TOKEN_SECRET: DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.
+    volumes:
+      - ./users-service:/app
+    depends_on:
+      - scooters-users-db
+    ports:
+      - "3001:3001"
+
+# METRICS
+  scooters-metrics-service:
+    container_name: scooters-metrics-service
+    build:
+      context: ./metrics-service
+    environment:
+      SERVER_HOST: scooters-metrics-service
+      SERVER_PORT: 3003
+      CONSUL_HOST: scooters-sd
+      CONSUL_PORT: 8500
+      BROKER_URL: amqp://user:password@scooters-broker:5672
+      BROKER_EXCHANGE: reqeusts
+      BROKER_QUEUE: reqeusts
+      JWT_TOKEN_SECRET: DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.
+    volumes:
+      - ./metrics-service:/app
+    ports:
+      - "3003:3003"
+
+# WEB
+  scooter-web:
+    container_name: scooter-web
+    build:
+      context: ./scooter-web
+    environment:
+      VITE_BASE_API: http://scooters-gateway:80
+    volumes:
+      - ./scooter-web:/app
+    ports:
+      - "5173:5173"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.services.web.loadbalancer.server.port=5173"
